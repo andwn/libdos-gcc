@@ -1,10 +1,8 @@
-# Default paths, can be overridden by setting MARSDEV before calling make
-MARSDEV ?= ${HOME}/mars
-MARSCPU  = m68k-elf
-MARSGCC  = $(MARSDEV)/$(MARSCPU)
-
-MARSBIN  = $(MARSGCC)/bin
-TOOLSBIN = $(MARSDEV)/bin
+MARSDEV = $(MARS_BUILD_DIR)
+MARSCPU = m68k-elf
+MARSGCC = $(MARSDEV)/$(MARSCPU)
+MARSBIN = $(MARSDEV)/$(MARSCPU)/bin
+MARSLIB = $(MARSDEV)/$(MARSCPU)/lib
 
 TARGET = libdos
 
@@ -37,6 +35,10 @@ OBJS += $(SS:.s=.o)
 
 .PHONY: all
 all: $(TARGET).a
+	cp -f libdos.a $(MARSLIB)/
+	cp -f elf2x.py $(MARSBIN)/
+	cp -f human68k.ld $(MARSLIB)/
+	cp -rf include/* $(MARSDEV)/m68k-elf/m68k-elf/include/
 
 %.a: $(OBJS)
 	$(AR) rcs --plugin=$(PLUGIN) $@ $(OBJS)
@@ -47,6 +49,10 @@ all: $(TARGET).a
 
 %.o: %.s
 	$(AS) -o $@ $(ASFLAGS) $<
+
+.PHONY: test
+test: all
+	make -C test
 
 .PHONY: clean
 clean:
